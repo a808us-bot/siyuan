@@ -45,6 +45,23 @@ func InitAppearance() {
 		util.ReportFileSysFatalError(err)
 		return
 	}
+	if err := filepath.Walk(util.AppearancePath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		mode := info.Mode()
+		if info.IsDir() {
+			mode |= 0700
+		} else {
+			mode |= 0600
+		}
+		return os.Chmod(path, mode)
+	}); err != nil {
+		logging.LogErrorf("fix appearance resource permissions under [%s] failed: %s", util.AppearancePath, err)
+		util.ReportFileSysFatalError(err)
+		return
+	}
 
 	LoadThemes()
 	LoadIcons()
